@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Compose</string>
+    <string name="hello">Hey,there</string>
+    <string name="firstName">first Name</string>
+    <string name="lastName">last Name</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="create_account">Create an Account</string>
+    <string name="welcome">Welcome Back</string>
+    <string name="register">register</string>
+    <string name="hide_password">hide password</string>
+    <string name="show_password">show password</string>
+    <string name="terms_and_condition">By continuing you accept our Privacy Policy and Terms of Use</string>
+    <string name="terms_and_condition_header"> Terms of Use</string>
+    <string name="or">or</string>
+    <string name="go_to_login">Already have an Account</string>
+    <string name="login">Login</string>
+    <string name="forgot_password">Forgot your password?</string>
+</resources>
