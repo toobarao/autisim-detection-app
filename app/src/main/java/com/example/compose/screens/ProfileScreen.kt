@@ -100,7 +100,8 @@ fun ProfileScreen(profileViewModel: profileViewModel = viewModel()) {
             .padding(28.dp)) {
             if (isLoading) {
                 // Show a loading indicator
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier.fillMaxSize(2f)
+                .align(Alignment.Center))
             } else {
             Column(
                 modifier = Modifier

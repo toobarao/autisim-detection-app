@@ -60,7 +60,7 @@ fun MainScreen(){
         3
     })
 
-    val scope = rememberCoroutineScope()
+   val scope = rememberCoroutineScope()
 //    Box(
 //        modifier = Modifier.fillMaxSize(),
 //        contentAlignment = Alignment.Center
@@ -96,46 +96,46 @@ fun MainScreen(){
                            // modifier = Modifier.fillMaxSize()
                         )
                     }
-//                    Box(
-//                        modifier = Modifier
-//                            .offset(y = -(16).dp)
-//                            .fillMaxWidth(0.5f)
-//                            .clip(RoundedCornerShape(100))
-//                            .background(Color.White)
-//                            .padding(3.dp)
-//                            .align(Alignment.BottomCenter)
-//                    ) {
-//                        IconButton(
-//                            onClick = {
-//                                scope.launch {
-//                                    pagerState.animateScrollToPage(
-//                                        pagerState.currentPage - 1
-//                                    )
-//                                }
-//                            },
-//                            modifier = Modifier.align(Alignment.CenterStart)
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.KeyboardArrowLeft,
-//                                contentDescription = "Go back"
-//                            )
-//                        }
-//                        IconButton(
-//                            onClick = {
-//                                scope.launch {
-//                                    pagerState.animateScrollToPage(
-//                                        pagerState.currentPage + 1
-//                                    )
-//                                }
-//                            },
-//                            modifier = Modifier.align(Alignment.CenterEnd)
-//                        ) {
-//                            Icon(
-//                                imageVector = Icons.Default.KeyboardArrowRight,
-//                                contentDescription = "Go forward"
-//                            )
-//                        }
-//                    }
+                    Box(
+                        modifier = Modifier
+                            .offset(y = -(16).dp)
+                            .fillMaxWidth(0.5f)
+                            .clip(RoundedCornerShape(100))
+                            .background(Color.White)
+                            .padding(3.dp)
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(
+                                        pagerState.currentPage - 1
+                                    )
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowLeft,
+                                contentDescription = "Go back"
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(
+                                        pagerState.currentPage + 1
+                                    )
+                                }
+                            },
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = "Go forward"
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
