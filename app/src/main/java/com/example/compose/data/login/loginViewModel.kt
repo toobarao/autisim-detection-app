@@ -1,17 +1,27 @@
 package com.example.compose.data.login
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.compose.data.rules.Validator
 import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
 import com.google.firebase.auth.FirebaseAuth
+import android.content.Context
+import androidx.compose.runtime.currentCompositionLocalContext
+import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 
 
 class loginViewModel:ViewModel() {
+
     var loginUIState= mutableStateOf(loginUIState())
     val loginInProgress= mutableStateOf(false)
+
     private val TAG= loginViewModel::class.simpleName
     fun onEvent(event: loginUIEvent){
         when (event){
@@ -24,7 +34,7 @@ class loginViewModel:ViewModel() {
             }
             is loginUIEvent.LoginButtonClicked->{
                 if(validateDataWithRules())
-                 printState()
+                login(loginUIState.value.email, loginUIState.value.password)
             }
         }}
 
@@ -33,9 +43,6 @@ class loginViewModel:ViewModel() {
     private fun validateDataWithRules():Boolean {
         val emailResult= Validator.validateEmail(email = loginUIState.value.email)
         val passwordResult= Validator.validatePassword(password = loginUIState.value.password)
-        Log.d(TAG,"validator with rules")
-        Log.d(TAG,"email=$emailResult")
-        Log.d(TAG,"password=$passwordResult")
         val hasError = listOf(
             emailResult,
             passwordResult,
@@ -55,22 +62,29 @@ class loginViewModel:ViewModel() {
 
     }
 
-    private fun printState(){
-        Log.d(TAG,"Initial_printState")
-        Log.d(TAG,loginUIState.value.toString())
-        login(loginUIState.value.email,loginUIState.value.password)
-    }
+
     private fun login(email:String,password:String){
         loginInProgress.value=true
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(email,password)
-            .addOnCompleteListener { Log.d(TAG,"isSuccessful=${it.isSuccessful}")
-                if(it.isSuccessful){
-                    loginInProgress.value=false
-                    PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
-                } }
-            .addOnFailureListener {
+        val auth = FirebaseAuth.getInstance()
+
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+            if(it.isSuccessful){
                 loginInProgress.value=false
-                Log.d(TAG,"Not Successful=${it.message}")
-                Log.d(TAG,"Not Successful=${it.localizedMessage}") }
+                PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
+            }
+        }.addOnFailureListener {exception ->
+            loginInProgress.value=false
+            val errorMessage = when (exception) {
+                is FirebaseAuthInvalidUserException -> "Invalid user"
+                is FirebaseAuthInvalidCredentialsException -> "Invalid credentials"
+                is FirebaseNetworkException->"Network Error"
+                else -> exception.localizedMessage ?: "Unknown error occurred"
+            }
+            loginUIState.value.loginErrorMessage = errorMessage
+
+
+            }
+
+
+            }
     }
-}

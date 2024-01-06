@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.R
 import com.example.compose.data.home.NavigationItem
+import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.ui.theme.ComponentShapes
 import com.example.compose.ui.theme.colorAccent
 import com.example.compose.ui.theme.colorError
@@ -86,7 +87,7 @@ fun NormalTextComponent(value:String){
         .fillMaxWidth()
         .heightIn(min = 40.dp),
         text=value,
-        style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Normal,
+        style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Normal,
             fontStyle = FontStyle.Normal),
         color= colorResource(id = R.color.colorText),
         textAlign = TextAlign.Center
@@ -147,6 +148,7 @@ fun errorMessage(errorMessage:String)
 //        modifier = Modifier.align(Alignment.End)
     )
 }
+
 
 @Composable
 fun PasswordTextFieldComponent(labelValue:String,painterResource: Painter,onTextSelected: (String) -> Unit){
@@ -381,12 +383,12 @@ fun AppToolbar(
     TopAppBar(
         title = {
             Text(
-                text = toolbarTitle, color = Color.Black
+                text = toolbarTitle, color = Color.White
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.primary,
+            containerColor = colorPrimary,
+            titleContentColor = colorSecondary,
         ),
 
         navigationIcon = {
@@ -396,7 +398,7 @@ fun AppToolbar(
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = stringResource(R.string.menu),
-                    tint = Color.Black
+                    tint = Color.White
                 )
             }
 
@@ -408,6 +410,7 @@ fun AppToolbar(
                 Icon(
                     imageVector = Icons.Filled.Logout,
                     contentDescription = stringResource(id = R.string.logout),
+                    tint = Color.White
                 )
             }
         }
@@ -429,7 +432,7 @@ fun NavigationDrawerHeader(value: String?) {
     ) {
 
         NavigationDrawerText(
-            title = value?:stringResource(R.string.navigation_header), 28.sp , colorAccent
+            title = value?:stringResource(R.string.navigation_header), 32.sp ,color=Color.Black
         )
 
     }
@@ -441,7 +444,9 @@ fun NavigationDrawerBody(navigationDrawerItems: List<NavigationItem>,
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
 
         items(navigationDrawerItems) {
-            NavigationItemRow(item = it,onNavigationItemClicked)
+            NavigationItemRow(item = it,onNavigationItemClicked={
+                PostOfficeAppRouter.navigateTo(it.itemId)
+            })
         }
 
     }
@@ -483,10 +488,10 @@ fun NavigationDrawerText(title: String, textUnit: TextUnit, color: Color) {
             color = Color.Black,
             fontSize = textUnit,
             fontStyle = FontStyle.Normal,
-            shadow = Shadow(
-                color = colorPrimary,
-                offset = shadowOffset, 2f
-            )
+//            shadow = Shadow(
+//                color = Color.Black,
+//                offset = shadowOffset, 2f
+//            )
         )
     )
 }

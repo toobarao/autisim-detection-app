@@ -1,11 +1,13 @@
 package com.example.compose.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
@@ -13,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,13 +74,19 @@ fun LoginScreen(loginViewModel: loginViewModel = viewModel()){
             Spacer(modifier = Modifier.height(40.dp))
 
             UnderlinedTextComponent(value = stringResource(id = R.string.forgot_password))
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
+            if (loginViewModel.loginUIState.value.loginErrorMessage != null) {
+               // Toast.makeText(LocalContext.current,loginViewModel.loginUIState.value.loginErrorMessage,Toast.LENGTH_LONG ).show()
+                errorMessage(errorMessage = loginViewModel.loginUIState.value.loginErrorMessage.toString())
+            }
+            Spacer(modifier = Modifier.heightIn(40.dp))
             ButtonComponent(value = stringResource(id = R.string.login), onButtonClicked = {
                 loginViewModel.onEvent(
                     loginUIEvent.LoginButtonClicked
                 )
             })
+
             Spacer(modifier = Modifier.height(20.dp))
 
             DividerTextComponent()

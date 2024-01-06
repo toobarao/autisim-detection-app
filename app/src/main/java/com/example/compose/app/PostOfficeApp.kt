@@ -12,8 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
+import com.example.compose.screens.AboutScreen
 import com.example.compose.screens.HomeScreen
 import com.example.compose.screens.LoginScreen
+import com.example.compose.screens.MainScreen
+import com.example.compose.screens.ProfileScreen
 import com.example.compose.screens.SignUpScreen
 
 import com.example.compose.screens.TermsAndConditionsScreen
@@ -37,8 +40,20 @@ fun PostOfficeApp(){
                 is Screen.HomeScreen->{
                    HomeScreen()
                 }
+                is Screen.MainScreen->{
+                   MainScreen()
+                }
+                is Screen.ProfileScreen->{
+                    ProfileScreen()
+                }
+                is Screen.AboutScreen->{
+                    AboutScreen()
+                }
+                else->{
 
-                else -> {}
+                }
+
+
             }
 
         }

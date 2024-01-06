@@ -3,6 +3,7 @@
     <string name="hello">Hey,there</string>
     <string name="firstName">first Name</string>
     <string name="lastName">last Name</string>
+    <string name="userName">User Name</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="create_account">Create an Account</string>
@@ -20,4 +21,6 @@
     <string name="home">Home</string>
     <string name="navigation_header">Header</string>
     <string name="menu">Menu</string>
+    <string name="about">About AutiSnap Jr.</string>
+    <string name="update">Update Profile</string>
 </resources>

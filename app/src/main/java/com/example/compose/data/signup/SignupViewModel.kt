@@ -3,12 +3,15 @@ package com.example.compose.data.signup
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.compose.app.PostOfficeApp
+import com.example.compose.data.profile.profileViewModel
 import com.example.compose.data.rules.Validator
 import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuth.AuthStateListener
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 
 class SignupViewModel:ViewModel() {
 
@@ -44,18 +47,15 @@ class SignupViewModel:ViewModel() {
         is SignupUIEvent.RegisterButtonClicked->{
 
             if(validateDataWithRules())
-            {signup()}
+            {
+                createUserInFireBase(registrationUIState.value.firstName+registrationUIState.value.lastName,email=registrationUIState.value.email, password =registrationUIState.value.password )
+            }
         }
     }
 
     }
 
-    private fun signup() {
-        Log.d(TAG,"Initial_signup")
-        printState()
-        createUserInFireBase(email=registrationUIState.value.email, password =registrationUIState.value.password )
-//        validateDataWithRules()
-    }
+
 
     private fun validateDataWithRules():Boolean{
        val fNameResult=Validator.validateFirstName(fName = registrationUIState.value.firstName)
@@ -65,11 +65,7 @@ class SignupViewModel:ViewModel() {
         val privacyPolicyResult = Validator.validatePrivacyPolicyAcceptance(
             statusValue = registrationUIState.value.privacyPolicyAccepted
         )
-        Log.d(TAG,"validator with rules")
-        Log.d(TAG,"firstName=$fNameResult")
-        Log.d(TAG,"lastName=$lNameResult")
-        Log.d(TAG,"email=$emailResult")
-        Log.d(TAG,"password=$passwordResult")
+
 
         val hasError = listOf(
             fNameResult,
@@ -95,24 +91,35 @@ class SignupViewModel:ViewModel() {
 
     }
 
-    private fun printState(){
-        Log.d(TAG,"Initial_printState")
-        Log.d(TAG,registrationUIState.value.toString())
-    }
-    private fun createUserInFireBase(email:String,password:String){
+
+    private fun createUserInFireBase(Username:String,email:String,password:String){
         signUpInProgress.value = true
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,password)
-            .addOnCompleteListener { Log.d(TAG,"isSuccessful=${it.isSuccessful}")
+        val auth = FirebaseAuth.getInstance()
+        val user=profileViewModel()
+
+            auth.createUserWithEmailAndPassword(email,password).addOnCompleteListener {
+                Log.d(TAG,"isSuccessful=${it.isSuccessful}")
                 if(it.isSuccessful){
-                    Log.d(TAG,"navigated to home scree")
+                    signUpInProgress.value = false
+                    user.AddingUser(Username,email)
                     PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
                 }
+            }.addOnFailureListener {exception->
+                    signUpInProgress.value = false
+                    val errorMessage = when (exception) {
+                        is FirebaseAuthInvalidUserException -> "Invalid user"
+                        is FirebaseAuthInvalidCredentialsException -> "Invalid credentials"
+                        is FirebaseAuthUserCollisionException->"Email already exists"
+                        is FirebaseNetworkException->"Network Error"
+                        else -> exception.localizedMessage ?: "Unknown error occurred"
+                    }
+                registrationUIState.value.signupErrorMessage = errorMessage
+
             }
 
-            .addOnFailureListener {
-                signUpInProgress.value = false
-                Log.d(TAG,"Not Successful=${it.message}")
-                Log.d(TAG,"Not Successful=${it.localizedMessage}")}
+
+
+
     }
 
 

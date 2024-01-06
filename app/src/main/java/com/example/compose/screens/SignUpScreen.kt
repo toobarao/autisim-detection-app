@@ -1,5 +1,6 @@
 package com.example.compose.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +38,7 @@ import com.example.compose.data.signup.SignupViewModel
 
 import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
+import com.example.compose.ui.theme.colorError
 
 @Composable
 fun SignUpScreen(signupViewModel: SignupViewModel = viewModel()){
@@ -61,7 +64,7 @@ Surface(modifier= Modifier
         if (signupViewModel.registrationUIState.value.firstNameError != null) {
             errorMessage(errorMessage = signupViewModel.registrationUIState.value.firstNameError.toString())
         }
-//        ,errorStatus=signupViewModel.registrationUIState.value.firstNameError
+
         MyTextFieldComponent(labelValue = stringResource(id = R.string.lastName), painterResource(id = R.drawable.profile), onTextSelected = {signupViewModel.onEvent(
             SignupUIEvent.LastNameChanged(it))})
         if (signupViewModel.registrationUIState.value.lastNameError != null) {
@@ -93,9 +96,17 @@ Surface(modifier= Modifier
         }
 
         Spacer(modifier = Modifier.heightIn(40.dp))
+        if (signupViewModel.registrationUIState.value.signupErrorMessage != null) {
+            Text(
+                text =signupViewModel.registrationUIState.value.signupErrorMessage.toString(),
+                color = colorError,
+        modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+        }
+        Spacer(modifier = Modifier.heightIn(40.dp))
 
         ButtonComponent(stringResource(id =  R.string.register), onButtonClicked = { signupViewModel.onEvent(SignupUIEvent.RegisterButtonClicked) })
-//
+
 
         Spacer(modifier = Modifier.heightIn(20.dp))
 

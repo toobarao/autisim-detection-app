@@ -7,6 +7,7 @@ data class loginUIState(
 
     var emailError:String?=null,
     var passwordError:String?=null,
+    var loginErrorMessage:String?=null,
 
 
 )
