@@ -1,5 +1,7 @@
 package com.example.compose.data.signup
 
+import androidx.navigation.NavController
+
 sealed class SignupUIEvent {
     data class FirstNameChanged(val firstName:String): SignupUIEvent()
     data class LastNameChanged(val lastName:String): SignupUIEvent()
@@ -8,5 +10,5 @@ sealed class SignupUIEvent {
 
     data class PrivacyPolicyCheckBoxClicked(val status:Boolean) : SignupUIEvent()
 
-    object RegisterButtonClicked: SignupUIEvent()
+    data class RegisterButtonClicked(val navController: NavController): SignupUIEvent()
 }

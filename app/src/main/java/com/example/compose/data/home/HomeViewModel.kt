@@ -1,55 +1,35 @@
 package com.example.compose.data.home
 
 import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.compose.R
-import com.example.compose.data.login.loginUIEvent
-import com.example.compose.navigation.PostOfficeAppRouter
+import androidx.navigation.NavController
+import com.example.compose.data.profile.Users
+//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
+
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.database
+import com.google.firebase.database.getValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class HomeViewModel: ViewModel() {
     private val TAG=HomeViewModel::class.simpleName
 
-    val navigationItemsList =listOf<NavigationItem>(
-        NavigationItem(
-            title = "Home",
-            icon= Icons.Default.Home,
-            description = "Home Screen",
-            itemId=Screen.HomeScreen
-        ),
-        NavigationItem(
-            title = "Profile",
-            icon= Icons.Default.AccountBox,
-            description = "Profile Screen",
-            itemId=Screen.ProfileScreen
-        ),
-        NavigationItem(
-            title = "About",
-            icon= Icons.Default.Help,
-            description = "About Screen",
-            itemId=Screen.AboutScreen
-        )
 
-
-
-    )
     val isUserLoggedIn: MutableLiveData<Boolean> = MutableLiveData()
 
-    fun logout(){
+    fun logout(navController: NavController){
         val firebaseAuth= FirebaseAuth.getInstance()
         firebaseAuth.signOut()
         val authStateListener= FirebaseAuth.AuthStateListener {
             if (it.currentUser == null) {
                 Log.d(TAG, "Signout Success")
-                PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
+                navController.navigate(Screen.LoginScreen.route)
+               // PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
             } else {
                 Log.d(TAG, "Signout not Success")
             }
@@ -77,6 +57,8 @@ class HomeViewModel: ViewModel() {
             }
         }
     }
+
+
 
 
 }

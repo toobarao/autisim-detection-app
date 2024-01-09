@@ -22,8 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -39,59 +37,58 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.compose.R
 import com.example.compose.components.AppToolbar
 import com.example.compose.components.NavigationDrawerBody
 import com.example.compose.components.NormalTextComponent
 import com.example.compose.data.home.HomeViewModel
+import com.example.compose.data.profile.Users
+import com.example.compose.data.profile.profileViewModel
+import com.example.compose.navigation.extraItems
+import com.example.compose.navigation.navigationItemsList
 import com.example.compose.ui.theme.colorPrimary
 import com.example.compose.ui.theme.colorSecondary
 import com.example.compose.utility.StoarageUtil
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
-
-    val drawerItem2 = listOf(
-        DrawerItems(Icons.Default.Share, "Share", 0, false),
-        DrawerItems(Icons.Filled.Star, "Rate", 0, false)
-    )
-    var selectedItem by remember { mutableStateOf(drawerItem2[0]) }
+fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
+    // val TAG = profileViewModel::class.simpleName
+    val item1= navigationItemsList
+    val item2=extraItems
+    var selectedItem  by rememberSaveable { mutableStateOf(0) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-
-
-
+    val profileViewModel:profileViewModel= viewModel()
+    profileViewModel.readingUserData()
     ModalNavigationDrawer(drawerContent = {
         ModalDrawerSheet {
-
-            Column(androidx.compose.ui.Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
-                    modifier = androidx.compose.ui.Modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                         .background(
@@ -99,19 +96,11 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                                 listOf(colorPrimary, colorSecondary)
                             )
                         ),
-                   // contentAlignment = Alignment.Center
+
                 ) {
-                    Column(
-                        androidx.compose.ui.Modifier.fillMaxSize(),
-                            //.wrapContentSize(),
-                      // verticalArrangement = Arrangement.SpaceAround,
-                        //horizontalAlignment = Alignment.CenterHorizontally
-                    )
+                    Column(Modifier.fillMaxSize(),)
                     {
-
-                       
-
-                        IconButton(modifier = androidx.compose.ui.Modifier.align(Alignment.End),onClick = {
+                        IconButton(modifier = Modifier.align(Alignment.End),onClick = {
                             scope.launch {
                                 drawerState.close()
                             }
@@ -119,56 +108,57 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                         {
                             Icon(imageVector = Icons.Filled.Close, contentDescription = "close Icon")
                         }
-                        Spacer(modifier = androidx.compose.ui.Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
                         Image(
-                            modifier = androidx.compose.ui.Modifier.align(Alignment.CenterHorizontally),
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
                             painter = painterResource(R.drawable.sun_31_12_2023_18_41_37),
                             contentDescription = null,
 
                             )
 
-//                        homeViewModel.emailId.value
+                //   homeViewModel.emailId.value
 
 
 
                     }
-
                     Divider(
-                        androidx.compose.ui.Modifier
+                        Modifier
                             .align(Alignment.BottomEnd)
-                            .padding(3.dp),thickness = 1.dp,
-                        Color.DarkGray
-                    )
+                            .padding(3.dp),thickness = 1.dp, Color.DarkGray)
                 }
 
-                NavigationDrawerBody(navigationDrawerItems = homeViewModel.navigationItemsList,
-                onNavigationItemClicked = {
-
-                    Log.d("ComingHere","inside_NavigationItemClicked")
-                    Log.d("ComingHere","${it.itemId} ${it.title}")
+                NavigationDrawerBody(navigationDrawerItems = item1,
+                onNavigationItemClicked = {it->
+                    navController.navigate(it.route)
+                    scope.launch {
+                        drawerState.close()
+                    }
+//                    Log.d("ComingHere","inside_NavigationItemClicked")
+//                    Log.d("ComingHere","${it.itemId} ${it.title}")
                 })
 
-                Spacer(modifier = androidx.compose.ui.Modifier.height(50.dp))
+                Spacer(modifier = Modifier.height(50.dp))
 
 
-                Divider( modifier= androidx.compose.ui.Modifier.padding(10.dp),thickness = 1.dp,
+                Divider( modifier= Modifier.padding(10.dp),thickness = 1.dp,
                     color = Color.DarkGray
                 )
 
 
-                drawerItem2.forEach{
-                    NavigationDrawerItem(label = { Text(text = it.text, fontSize = 15.sp) }
-                        , selected = it == selectedItem
-                        , onClick = {
-                            //selectedItem = it
-                        },
+                item2.forEachIndexed{index, item ->
+                    NavigationDrawerItem(label = { Text(text = item.text, fontSize = 15.sp) }
+                        , selected = index == selectedItem
+                        , onClick = { selectedItem = index
+                            scope.launch {
+                                drawerState.close()
+                            }},
                         colors= NavigationDrawerItemDefaults.colors(
                             selectedContainerColor =Color.LightGray,
                         ),
-                        modifier= androidx.compose.ui.Modifier
+                        modifier= Modifier
                             .padding(horizontal = 12.dp)
                         , icon = {
-                            Icon(imageVector = it.icon, contentDescription = it.text)
+                            Icon(imageVector = item.icon, contentDescription = item.text)
                         }
                     )
                 }
@@ -183,7 +173,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
             topBar = {
                 AppToolbar(toolbarTitle = stringResource(id = R.string.home),
                     logoutButtonClicked = {
-                        homeViewModel.logout()
+                        homeViewModel.logout(navController)
                     },
                     navigationIconClicked = {
                         scope.launch {
@@ -195,33 +185,37 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
 
 
             val context = LocalContext.current
+            var uri by remember{
+                mutableStateOf<Uri?>(null)
+            }
 
-            var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
-
-            val multiplePhotoPicker = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickMultipleVisualMedia(),
+            val singlePhotoPicker = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia(),
                 onResult = {
-                    imageUris = it
+                    uri = it
                 }
             )
 
+
             Column(
-                modifier = Modifier.padding(paddingValues).padding(5.dp),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(5.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = androidx.compose.ui.Modifier.height(40.dp))
-                NormalTextComponent(value = "Upload your child images and with in just 2-3 minutes test we should be able to help you if your child might be autistic")
 
-                LazyColumn {
-                    item {
+
+                Spacer(modifier = Modifier.height(40.dp))
+                NormalTextComponent(value = "Upload your child image and with in just 2-3 minutes test we should be able to help you if your child might be autistic")
+
                         Button(modifier = Modifier
-                            .fillMaxSize()
+
                             .fillMaxWidth()
                             .heightIn(48.dp),
                             colors = ButtonDefaults.buttonColors(Color.Transparent),
                             // shape = RoundedCornerShape(50.dp),
                             onClick = {
-                                multiplePhotoPicker.launch(
+                                singlePhotoPicker.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                 )
                             }) {
@@ -241,41 +235,25 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Pick Multiple Images",style = TextStyle(fontSize = 18.sp))
+                                Text("Pick Sing Image",style = TextStyle(fontSize = 18.sp))
                             }
 
-                        }
+                      //  }
                     }
-
-                    items(imageUris) { uri ->
-                        AsyncImage(
-                            model = uri,
-                            contentDescription = null,
-                            modifier = Modifier.size(248.dp)
-                        )
-
-                    }
-
-                }
+                    AsyncImage(model = uri, contentDescription = null, modifier = Modifier.size(248.dp))
 
                 Button(modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp),
                     colors = ButtonDefaults.buttonColors(Color.Transparent), onClick = {
-                        imageUris.forEach { uri ->
-
-                            uri?.let {
-                                StoarageUtil.uploadToStorage(
-                                    uri = it,
-                                    context = context,
-                                    type = "image"
-                                )
-
+                            uri?.let{
+                                StoarageUtil.uploadToStorage(uri=it, context=context, type="image")
                             }
-                        }
+
 
                     }) {
                     Box(
+
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(20.dp)
@@ -289,7 +267,8 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
                                 ),
                                 shape = RoundedCornerShape(50.dp)
                             ),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
+
                     ) {
                         Text( "Upload",style = TextStyle(fontSize = 18.sp))
                     }
@@ -305,16 +284,9 @@ fun HomeScreen(homeViewModel: HomeViewModel = viewModel()) {
 }
 
 
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    HomeScreen()
-}
+//@Preview
+//@Composable
+//fun HomeScreenPreview() {
+//    HomeScreen()
+//}
 
-data class DrawerItems(
-
-    val icon : ImageVector,
-    val text : String,
-    val badgeCount : Int,
-    val hasBadge : Boolean
-)

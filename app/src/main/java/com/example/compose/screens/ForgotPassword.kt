@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.compose.R
 import com.example.compose.ui.theme.ComponentShapes
 import com.example.compose.ui.theme.colorPrimary
@@ -47,7 +48,7 @@ import java.time.format.TextStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordScreen() {
+fun ForgotPasswordScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -193,8 +194,8 @@ fun ForgotPasswordScreen() {
         }
     }}}
 }
-@Preview
-@Composable
-fun DefaultForgotPreview(){
-    ForgotPasswordScreen()
-}
+//@Preview
+//@Composable
+//fun DefaultForgotPreview(){
+//    ForgotPasswordScreen()
+//}

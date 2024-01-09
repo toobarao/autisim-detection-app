@@ -1,6 +1,7 @@
 package com.example.compose.screens
 
 import android.net.Uri
+import android.util.Log
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 
@@ -49,13 +51,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.compose.R
 import com.example.compose.components.ButtonComponent
 import com.example.compose.components.MyTextFieldComponent
+import com.example.compose.components.NormalTextComponent
 import com.example.compose.data.profile.UserProfileListener
 import com.example.compose.data.profile.Users
 import com.example.compose.data.profile.profileViewModel
+import com.example.compose.navigation.SystemBackButtonHandler
 import com.example.compose.ui.theme.colorPrimary
 import com.example.compose.ui.theme.colorSecondary
 import com.example.compose.utility.StoarageUtil
@@ -63,32 +70,13 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileScreen(profileViewModel: profileViewModel = viewModel()) {
+fun ProfileScreen(navController: NavController, profileViewModel: profileViewModel = viewModel()) {
+    val TAG = com.example.compose.data.profile.profileViewModel::class.simpleName
+    var name=profileViewModel.readDataFromSharedPreferences("name")
+    var email=profileViewModel.readDataFromSharedPreferences("email")
+    var edit:Boolean=false
 
-    var isLoading:Boolean=true
 
-    val currentUser = FirebaseAuth.getInstance().currentUser
-    val (userData, setUserData) = remember { mutableStateOf<Users?>(null) }
-    val (errorState, setErrorState) = remember { mutableStateOf<String?>(null) }
-
-    // Fetch user data when the screen is first composed
-    LaunchedEffect(currentUser) {
-        currentUser?.let { user ->
-            profileViewModel.retrieveUserProfileData(user.uid, object : UserProfileListener {
-                override fun onProfileDataReceived(userData: Users) {
-                    isLoading=false
-                    setUserData(userData) // Update the UI with fetched data
-                }
-
-                override fun onProfileError() {
-                    isLoading=true
-                    setErrorState("Error loading user data")
-
-                    // Handle errors or null cases when retrieving user data
-                }
-            })
-        }
-    }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -98,50 +86,72 @@ fun ProfileScreen(profileViewModel: profileViewModel = viewModel()) {
             .fillMaxSize()
             .background(Color.White)
             .padding(28.dp)) {
-            if (isLoading) {
-                // Show a loading indicator
-                CircularProgressIndicator(modifier = Modifier.fillMaxSize(2f)
-                .align(Alignment.Center))
-            } else {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .padding(8.dp)
             ) {
 
-                ProfileImage(profileViewModel,userData?.image)
+                ProfileImage(profileViewModel.readDataFromSharedPreferences("imageUri"))
                 Spacer(modifier = Modifier.heightIn(70.dp))
-                userData?.let { user ->
-                    MyTextFieldComponent(labelValue = user.name, painterResource(id = R.drawable.profile), onTextSelected = {})
-                    MyTextFieldComponent(user.email, painterResource(id = R.drawable.message), onTextSelected = {})
-
-                    // Display other user information here
-                } ?: run {
-                    // You can show a loading indicator or handle cases where userData is null
-                    Text(text = "Loading...")
-                }
-
-
+                NormalTextComponent(value = "Name")
+                Spacer(modifier = Modifier.heightIn(10.dp))
+                OutlinedTextField(value =name, readOnly = edit, onValueChange = {name=it})
+                NormalTextComponent(value = "Email")
+                Spacer(modifier = Modifier.heightIn(10.dp))
+                OutlinedTextField(value =email, readOnly = edit, onValueChange = {email=it})
                 Spacer(modifier = Modifier.heightIn(40.dp))
-                ButtonComponent(stringResource(id =  R.string.update), onButtonClicked = { })
+                ButtonComponent(stringResource(id =  R.string.Edit), onButtonClicked = { edit=true
+                    profileViewModel.writeToSharedPreferencesText(name,email)
+                })
+                if(edit)
+                { ButtonComponent(stringResource(id =  R.string.save), onButtonClicked = {
+                    profileViewModel.writeToSharedPreferencesText(name,email)
+                     name=profileViewModel.readDataFromSharedPreferences("name")
+                     email=profileViewModel.readDataFromSharedPreferences("email")
+                    edit=false
+                })}
             }}
-    }}
+    }
+
+  //  }
 
 
 }
 
 
 @Composable
-fun ProfileImage(profileViewModel: profileViewModel = viewModel(),imageUri:String?) {
+fun ProfileImage(imageUri:String?) {
 val context= LocalContext.current
+
     var uri by rememberSaveable { mutableStateOf<Uri?>(imageUri?.toUri()) }
 
-    val painter: Painter =
-        if (uri == null || uri == Uri.EMPTY) {
-            painterResource(R.drawable.profile) // Show default profile picture if URI is null or empty
-        } else {
-            rememberAsyncImagePainter(model = uri) // Show the image from URI
-        }
+    val painter: Painter = if (uri == null || uri == Uri.EMPTY) {
+        painterResource(R.drawable.profile) // Show default profile picture if URI is null or empty
+    } else {
+        rememberAsyncImagePainter(model = uri) // Show the image from URI
+    }
+    Image(
+        painter= rememberAsyncImagePainter( "content://com.android.providers.media.documents/document/image%3A1000000034"),contentDescription = null
+    )
+//    val painter: Painter =
+//        if (uri == null || uri == Uri.EMPTY) {
+//            painterResource(R.drawable.profile) // Show default profile picture if URI is null or empty
+//        } else {
+//            rememberImagePainter(data = uri) { // Show the image from URI
+//                // Handle loading and error states if needed
+//            }
+//        }
+
+//    val painter: Painter =remember{
+//        if (uri == null || uri == Uri.EMPTY) {
+//            painterResource(R.drawable.profile) // Show default profile picture if URI is null or empty
+//        } else {
+//            rememberImagePainter(data = uri){
+//
+//            }
+//           // rememberAsyncImagePainter(model =uri) // Show the image from URI
+//        }}
 
     val singlePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -151,7 +161,7 @@ val context= LocalContext.current
                 StoarageUtil.uploadToStorage(uri = it, context = context, type = "image")
 
                 // Update Realtime Database with the new image URI
-                profileViewModel.updateImageUriToDatabase(it.toString()) // Function to update URI in Realtime Database
+               // profileViewModel.updateImageUriToDatabase(it.toString()) // Function to update URI in Realtime Database
 
             }
         }
@@ -192,11 +202,11 @@ val context= LocalContext.current
 }
 
 
-@Preview
-@Composable
-fun DefaultPreviewProfileScreen(){
-    ProfileScreen()
-}
+//@Preview
+//@Composable
+//fun DefaultPreviewProfileScreen(){
+//    ProfileScreen()
+//}
 
 
 

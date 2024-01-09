@@ -1,12 +1,12 @@
 package com.example.compose.data.profile
 
+import android.app.Application
+import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.compose.data.signup.SignupViewModel
+
+import androidx.core.content.edit
+import androidx.lifecycle.AndroidViewModel
+
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -15,15 +15,12 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
-import kotlinx.coroutines.launch
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
-class profileViewModel: ViewModel() {
+class profileViewModel(application: Application): AndroidViewModel(application) {
     val auth = FirebaseAuth.getInstance()
 
     private val TAG = profileViewModel::class.simpleName
+    val sharedPref=application.getSharedPreferences("myPref", Context.MODE_PRIVATE)
     fun AddingUser(name: String, email: String) {
         Log.d(TAG, "Initial Profile data")
         Log.d(TAG, "Name" + name + "Email" + email)
@@ -34,7 +31,7 @@ class profileViewModel: ViewModel() {
             val userData = Users(
                 name = name,
                 email = email,
-                image = null
+                imageUri = null
             )
             userIdReference.setValue(userData)
         }
@@ -50,7 +47,7 @@ class profileViewModel: ViewModel() {
             val userDataUpdates = HashMap<String, Any>()
             userDataUpdates["name"] = name
             userDataUpdates["email"] = email
-            userDataUpdates["image"] = imageUrl
+            userDataUpdates["imageUri"] = imageUrl
 
             userIdReference.updateChildren(userDataUpdates)
                 .addOnSuccessListener {
@@ -66,33 +63,60 @@ class profileViewModel: ViewModel() {
         }
     }
 
-
-
-
-    fun retrieveUserProfileData(userId: String, callback: UserProfileListener) {
-        val userIdReference = Firebase.database.reference
-            .child("users").child(userId)
-
-        userIdReference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    val userData = dataSnapshot.getValue<Users>()
-                    userData?.let {
-                        callback.onProfileDataReceived(it) // Pass the user data
-                    } ?: run {
-                        callback.onProfileError() // Handle the case where user data is null
-                    }
-                } else {
-                    callback.onProfileError() // Handle the case where user data doesn't exist
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Handle errors that may occur during data retrieval
-                callback.onProfileError()
-            }
-        })
+    fun writeToSharedPreferences(name: String?,email:String?,imageUrl: String?) {
+        Log.d(TAG, email+name)
+        sharedPref.edit {
+            putString("name", name)
+            putString("email",email)
+            putString("imageUri",imageUrl)
+            apply()
+        }
     }
+    fun writeToSharedPreferencesText(name: String?,email:String?) {
+        Log.d(TAG, email+name)
+        sharedPref.edit {
+            putString("name", name)
+            putString("email",email)
+            apply()
+        }
+    }
+
+
+    fun readDataFromSharedPreferences(key:String): String {
+        Log.d(TAG,"we are in read"+key)
+        Log.d(TAG,sharedPref.getString(key, "") ?: "")
+        return sharedPref.getString(key, "") ?: ""
+    }
+
+    fun readingUserData(){
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val databaseReference = FirebaseDatabase.getInstance().reference.child("users")
+        userId?.let { uid ->
+            val userReference = databaseReference.child(uid)
+
+            userReference.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        // User data exists, retrieve it
+                        val userData = dataSnapshot.getValue<Users>()
+
+                        writeToSharedPreferences(userData?.name,userData?.email,userData?.imageUri)
+                        Log.d(TAG, "Value is: " + userData?.name)
+                        // Do something with userData
+                    } else {
+                        // User data doesn't exist at this location
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.w(TAG, "Failed to read value.", databaseError.toException())
+                    // Handle potential errors while retrieving data
+                }
+            })
+        }
+
+    }
+
 
     fun updateImageUriToDatabase(newImageUri: String) {
         // Use Firebase SDK to update the user's image URI in the Realtime Database

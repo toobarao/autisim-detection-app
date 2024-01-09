@@ -3,15 +3,21 @@ package com.example.compose.data.signup
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.compose.data.profile.Users
 import com.example.compose.data.profile.profileViewModel
 import com.example.compose.data.rules.Validator
-import com.example.compose.navigation.PostOfficeAppRouter
+//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.database.database
 
 class SignupViewModel:ViewModel() {
 
@@ -48,7 +54,7 @@ class SignupViewModel:ViewModel() {
 
             if(validateDataWithRules())
             {
-                createUserInFireBase(registrationUIState.value.firstName+registrationUIState.value.lastName,email=registrationUIState.value.email, password =registrationUIState.value.password )
+                createUserInFireBase(event.navController,registrationUIState.value.firstName+registrationUIState.value.lastName,email=registrationUIState.value.email, password =registrationUIState.value.password )
             }
         }
     }
@@ -90,19 +96,33 @@ class SignupViewModel:ViewModel() {
         }
 
     }
+    fun AddingUser(name: String, email: String) {
+        Log.d(TAG, "Initial Profile data")
+        Log.d(TAG, "Name" + name + "Email" + email)
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.run {
+            val userIdReference = Firebase.database.reference
+                .child("users").child(user.uid)
+            val userData = Users(
+                name = name,
+                email = email,
+                imageUri = null
+            )
+            userIdReference.setValue(userData)
+        }
+    }
 
-
-    private fun createUserInFireBase(Username:String,email:String,password:String){
+    private fun createUserInFireBase(navController: NavController,Username:String,email:String,password:String){
         signUpInProgress.value = true
         val auth = FirebaseAuth.getInstance()
-        val user=profileViewModel()
 
             auth.createUserWithEmailAndPassword(email,password).addOnCompleteListener {
                 Log.d(TAG,"isSuccessful=${it.isSuccessful}")
                 if(it.isSuccessful){
                     signUpInProgress.value = false
-                    user.AddingUser(Username,email)
-                    PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
+                    AddingUser(Username,email)
+                    navController.navigate(Screen.HomeScreen.route)
+                    //PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
                 }
             }.addOnFailureListener {exception->
                     signUpInProgress.value = false

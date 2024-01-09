@@ -3,25 +3,29 @@ package com.example.compose.navigation
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 
-sealed class Screen {
+sealed class Screen(val route:String) {
 
-    object SignUpScreen : Screen()
-    object TermsAndConditionsScreen : Screen()
-    object LoginScreen : Screen()
-    object HomeScreen : Screen()
-    object  MainScreen:Screen()
+    object SignUpScreen : Screen("signup_screen")
+    object TermsAndConditionsScreen : Screen("terms_condition_screen")
+    object LoginScreen : Screen("login_screen")
+    object HomeScreen : Screen("home_screen")
+    object  MainScreen:Screen("main_screen")
 
-    object AboutScreen:Screen()
+    object AboutScreen:Screen("about_screen")
 
-    object  ProfileScreen:Screen()
-}
+    object  ProfileScreen:Screen("profile_screen")
+    object ForgotPasswordScreen:Screen("forgot_password_screen")
 
-
-object PostOfficeAppRouter {
-
-    var currentScreen: MutableState<Screen> = mutableStateOf(Screen.MainScreen)
-
-    fun navigateTo(destination: Screen) {
-        currentScreen.value = destination
+    fun withArgs(vararg args:String):String{
+        return buildString {
+            append(route)
+            args.forEach{
+                    arg->
+                append("/$arg")
+            }
+        }
     }
 }
+
+
+

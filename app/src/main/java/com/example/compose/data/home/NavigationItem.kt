@@ -6,6 +6,13 @@ import com.example.compose.navigation.Screen
 data class NavigationItem(
     val title:String,
     val description:String,
-    val itemId: Screen,
+   val route:String,
     val icon: ImageVector
+)
+data class DrawerItems(
+
+    val icon : ImageVector,
+    val text : String,
+    val badgeCount : Int,
+    val hasBadge : Boolean
 )

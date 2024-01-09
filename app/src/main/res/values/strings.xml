@@ -22,5 +22,6 @@
     <string name="navigation_header">Header</string>
     <string name="menu">Menu</string>
     <string name="about">About AutiSnap Jr.</string>
-    <string name="update">Update Profile</string>
+    <string name="Edit">Edit Profile</string>
+    <string name="save">Save</string>
 </resources>

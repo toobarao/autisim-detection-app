@@ -76,7 +76,13 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     //Async images
     implementation("io.coil-kt:coil-compose:2.3.0")
+    implementation("androidx.navigation:navigation-compose:2.5.3")
 
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+
+    // Add the dependencies for the App Check libraries
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
     // When using the BoM, you don't specify versions in Firebase library dependencies
 

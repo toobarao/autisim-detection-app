@@ -70,7 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.R
 import com.example.compose.data.home.NavigationItem
-import com.example.compose.navigation.PostOfficeAppRouter
+//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.ui.theme.ComponentShapes
 import com.example.compose.ui.theme.colorAccent
 import com.example.compose.ui.theme.colorError
@@ -439,13 +439,13 @@ fun NavigationDrawerHeader(value: String?) {
 }
 
 @Composable
-fun NavigationDrawerBody(navigationDrawerItems: List<NavigationItem>,
-                         onNavigationItemClicked:(NavigationItem) -> Unit) {
+fun NavigationDrawerBody(navigationDrawerItems: List<NavigationItem>, onNavigationItemClicked:(NavigationItem) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
 
         items(navigationDrawerItems) {
             NavigationItemRow(item = it,onNavigationItemClicked={
-                PostOfficeAppRouter.navigateTo(it.itemId)
+                onNavigationItemClicked.invoke(it)
+                //PostOfficeAppRouter.navigateTo(it.itemId)
             })
         }
 
@@ -455,7 +455,6 @@ fun NavigationDrawerBody(navigationDrawerItems: List<NavigationItem>,
 @Composable
 fun NavigationItemRow(item: NavigationItem,
                       onNavigationItemClicked:(NavigationItem) -> Unit) {
-
 
     Row(
         modifier = Modifier

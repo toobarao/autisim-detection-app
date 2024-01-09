@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.compose.R
 import com.example.compose.components.ButtonComponent
 import com.example.compose.components.ClickableLoginTextComponent
@@ -33,12 +35,13 @@ import com.example.compose.components.UnderlinedTextComponent
 import com.example.compose.components.errorMessage
 import com.example.compose.data.login.loginUIEvent
 import com.example.compose.data.login.loginViewModel
-import com.example.compose.navigation.PostOfficeAppRouter
+//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
 import com.example.compose.navigation.SystemBackButtonHandler
+import com.example.compose.ui.theme.colorError
 
 @Composable
-fun LoginScreen(loginViewModel: loginViewModel = viewModel()){
+fun LoginScreen(navController: NavController, loginViewModel: loginViewModel = viewModel()){
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -78,12 +81,17 @@ fun LoginScreen(loginViewModel: loginViewModel = viewModel()){
 
             if (loginViewModel.loginUIState.value.loginErrorMessage != null) {
                // Toast.makeText(LocalContext.current,loginViewModel.loginUIState.value.loginErrorMessage,Toast.LENGTH_LONG ).show()
-                errorMessage(errorMessage = loginViewModel.loginUIState.value.loginErrorMessage.toString())
+                Text(
+                    text =loginViewModel.loginUIState.value.loginErrorMessage.toString(),
+                    color = colorError,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+
             }
             Spacer(modifier = Modifier.heightIn(40.dp))
             ButtonComponent(value = stringResource(id = R.string.login), onButtonClicked = {
                 loginViewModel.onEvent(
-                    loginUIEvent.LoginButtonClicked
+                    loginUIEvent.LoginButtonClicked(navController)
                 )
             })
 
@@ -93,9 +101,10 @@ fun LoginScreen(loginViewModel: loginViewModel = viewModel()){
             Spacer(modifier = Modifier.height(20.dp))
 
             ClickableLoginTextComponent(false, onTextSelected = {
-                PostOfficeAppRouter.navigateTo(
-                    Screen.SignUpScreen
-                )
+                navController.navigate(Screen.SignUpScreen.route)
+//                PostOfficeAppRouter.navigateTo(
+//                    Screen.SignUpScreen
+//                )
             })
 
         }
@@ -106,15 +115,13 @@ fun LoginScreen(loginViewModel: loginViewModel = viewModel()){
         }
     }
 
-        SystemBackButtonHandler {
-            PostOfficeAppRouter.navigateTo(Screen.SignUpScreen)
-        }
+
 
 
 
 }
-@Preview
-@Composable
-fun DefaultPreviewLoginScreen(){
-LoginScreen()
-}
+//@Preview
+//@Composable
+//fun DefaultPreviewLoginScreen(){
+//LoginScreen()
+//}

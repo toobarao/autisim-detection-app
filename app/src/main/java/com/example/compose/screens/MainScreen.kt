@@ -36,12 +36,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 import com.example.compose.R
 import com.example.compose.components.ButtonComponent
 import com.example.compose.components.ClickableLoginTextComponent
 
-import com.example.compose.navigation.PostOfficeAppRouter
+
 import com.example.compose.navigation.Screen
 import kotlinx.coroutines.launch
 
@@ -50,7 +51,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainScreen(){
+fun MainScreen(navController: NavController){
     val childPics = listOf(
         R.drawable.medium_shot_child_wearing_headphones,
         R.drawable.medium_shot_boy_with_laptop,
@@ -61,6 +62,7 @@ fun MainScreen(){
     })
 
    val scope = rememberCoroutineScope()
+
 //    Box(
 //        modifier = Modifier.fillMaxSize(),
 //        contentAlignment = Alignment.Center
@@ -141,12 +143,18 @@ fun MainScreen(){
                 Spacer(modifier = Modifier.height(20.dp))
 
                 ButtonComponent(stringResource(id =  R.string.register), onButtonClicked = {
-                    PostOfficeAppRouter.navigateTo(
-                        Screen.SignUpScreen)
-                })
+                    navController.navigate(Screen.SignUpScreen.route)
+//                    PostOfficeAppRouter.navigateTo(
+//                        Screen.SignUpScreen)
+                }
+                )
                 Spacer(modifier = Modifier.height(20.dp))
-                ClickableLoginTextComponent(tryingToLogin = true, onTextSelected = { PostOfficeAppRouter.navigateTo(
-                    Screen.LoginScreen) })
+                ClickableLoginTextComponent(tryingToLogin = true, onTextSelected = {
+                    navController.navigate(Screen.LoginScreen.route)
+//                    PostOfficeAppRouter.navigateTo(
+//                    Screen.LoginScreen)
+
+                })
 
             }
 
@@ -159,11 +167,11 @@ fun MainScreen(){
 
 
 }
-@Preview
-@Composable
-fun DefaultPreviewMainScreen(){
-    MainScreen()
-}
+//@Preview
+//@Composable
+//fun DefaultPreviewMainScreen(){
+//    MainScreen(navController = NavController)
+//}
 
 
 

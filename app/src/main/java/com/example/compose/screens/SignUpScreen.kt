@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.compose.R
 import com.example.compose.components.ButtonComponent
 import com.example.compose.components.CheckBoxComponent
@@ -36,12 +37,12 @@ import com.example.compose.components.errorMessage
 import com.example.compose.data.signup.SignupUIEvent
 import com.example.compose.data.signup.SignupViewModel
 
-import com.example.compose.navigation.PostOfficeAppRouter
+//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
 import com.example.compose.ui.theme.colorError
 
 @Composable
-fun SignUpScreen(signupViewModel: SignupViewModel = viewModel()){
+fun SignUpScreen(navController: NavController, signupViewModel: SignupViewModel = viewModel()){
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -85,9 +86,10 @@ Surface(modifier= Modifier
             signupViewModel.onEvent(SignupUIEvent.PrivacyPolicyCheckBoxClicked(it))
         },
             onTextSelected = {
-                PostOfficeAppRouter.navigateTo(
-                    Screen.TermsAndConditionsScreen
-                )
+                navController.navigate(Screen.TermsAndConditionsScreen.route)
+//                PostOfficeAppRouter.navigateTo(
+//                    Screen.TermsAndConditionsScreen
+//                )
             })
 
 
@@ -105,14 +107,17 @@ Surface(modifier= Modifier
         }
         Spacer(modifier = Modifier.heightIn(40.dp))
 
-        ButtonComponent(stringResource(id =  R.string.register), onButtonClicked = { signupViewModel.onEvent(SignupUIEvent.RegisterButtonClicked) })
+        ButtonComponent(stringResource(id =  R.string.register), onButtonClicked = { signupViewModel.onEvent(SignupUIEvent.RegisterButtonClicked(navController)) })
 
 
         Spacer(modifier = Modifier.heightIn(20.dp))
 
         DividerTextComponent()
 
-        ClickableLoginTextComponent(tryingToLogin = true, onTextSelected = { PostOfficeAppRouter.navigateTo(Screen.LoginScreen) })
+        ClickableLoginTextComponent(tryingToLogin = true, onTextSelected = {
+            navController.navigate(Screen.LoginScreen.route)
+//            PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
+        })
 
 
 
@@ -127,8 +132,8 @@ Surface(modifier= Modifier
     }
 }
 
-@Preview
-@Composable
-fun DefaultPreviewSignUpScreen(){
-    SignUpScreen()
-}
+//@Preview
+//@Composable
+//fun DefaultPreviewSignUpScreen(){
+//    SignUpScreen()
+//}

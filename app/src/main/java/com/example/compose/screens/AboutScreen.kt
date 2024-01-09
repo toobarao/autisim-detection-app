@@ -16,13 +16,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.compose.R
 import com.example.compose.components.HeadingTextComponent
 import com.example.compose.components.NormalTextComponent
 import com.example.compose.data.login.loginViewModel
 
 @Composable
-fun AboutScreen(){
+fun AboutScreen(navController: NavController){
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -46,8 +47,8 @@ fun AboutScreen(){
         }
     }
 }
-@Preview
-@Composable
-fun DefaultPreviewAboutScreen(){
-    AboutScreen()
-}
+//@Preview
+//@Composable
+//fun DefaultPreviewAboutScreen(){
+//    AboutScreen()
+//}
