@@ -2,7 +2,6 @@ package com.example.compose.screens
 
 import android.net.Uri
 import android.util.Log
-
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -11,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -46,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -57,26 +55,22 @@ import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.compose.R
 import com.example.compose.components.ButtonComponent
-import com.example.compose.components.MyTextFieldComponent
-import com.example.compose.components.NormalTextComponent
-import com.example.compose.data.profile.UserProfileListener
-import com.example.compose.data.profile.Users
+
 import com.example.compose.data.profile.profileViewModel
-import com.example.compose.navigation.SystemBackButtonHandler
+
 import com.example.compose.ui.theme.colorPrimary
 import com.example.compose.ui.theme.colorSecondary
 import com.example.compose.utility.StoarageUtil
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.launch
+
 
 @Composable
 fun ProfileScreen(navController: NavController, profileViewModel: profileViewModel = viewModel()) {
     val TAG = com.example.compose.data.profile.profileViewModel::class.simpleName
-    var name=profileViewModel.readDataFromSharedPreferences("name")
-    var email=profileViewModel.readDataFromSharedPreferences("email")
-    var edit:Boolean=false
-
-
+    val name = profileViewModel.readDataFromSharedPreferences("name")
+    val email = profileViewModel.readDataFromSharedPreferences("email")
+    var edit by remember { mutableStateOf(false) }
+    var tname by remember { mutableStateOf(name) }
+    var temail by remember { mutableStateOf(email) }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -92,25 +86,30 @@ fun ProfileScreen(navController: NavController, profileViewModel: profileViewMod
                     .padding(8.dp)
             ) {
 
-                ProfileImage(profileViewModel.readDataFromSharedPreferences("imageUri"))
+                ProfileImage(profileViewModel,profileViewModel.readDataFromSharedPreferences("imageUri"))
                 Spacer(modifier = Modifier.heightIn(70.dp))
-                NormalTextComponent(value = "Name")
+                Text("Name",modifier= Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 40.dp),textAlign = TextAlign.Start)
+                Spacer(modifier = Modifier.heightIn(5.dp))
+                OutlinedTextField(value =tname, readOnly = !edit, onValueChange = {tname=it})
                 Spacer(modifier = Modifier.heightIn(10.dp))
-                OutlinedTextField(value =name, readOnly = edit, onValueChange = {name=it})
-                NormalTextComponent(value = "Email")
-                Spacer(modifier = Modifier.heightIn(10.dp))
-                OutlinedTextField(value =email, readOnly = edit, onValueChange = {email=it})
+                Text("Email",modifier= Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 40.dp),textAlign = TextAlign.Start)
+                Spacer(modifier = Modifier.heightIn(5.dp))
+                OutlinedTextField(value =temail, readOnly =!edit, onValueChange = {temail=it})
                 Spacer(modifier = Modifier.heightIn(40.dp))
-                ButtonComponent(stringResource(id =  R.string.Edit), onButtonClicked = { edit=true
+                ButtonComponent(stringResource(id =  R.string.Edit), onButtonClicked = { edit=!edit
                     profileViewModel.writeToSharedPreferencesText(name,email)
                 })
-                if(edit)
-                { ButtonComponent(stringResource(id =  R.string.save), onButtonClicked = {
-                    profileViewModel.writeToSharedPreferencesText(name,email)
-                     name=profileViewModel.readDataFromSharedPreferences("name")
-                     email=profileViewModel.readDataFromSharedPreferences("email")
-                    edit=false
+                Spacer(modifier = Modifier.heightIn(40.dp))
+                if(edit){
+                ButtonComponent(stringResource(id =  R.string.save), onButtonClicked = {
+                   profileViewModel.updateUserProfile(tname,temail, "")
+                    edit=!edit
                 })}
+
             }}
     }
 
@@ -121,9 +120,9 @@ fun ProfileScreen(navController: NavController, profileViewModel: profileViewMod
 
 
 @Composable
-fun ProfileImage(imageUri:String?) {
+fun ProfileImage(profileViewModel: profileViewModel = viewModel(),imageUri:String?) {
 val context= LocalContext.current
-
+Log.d("my tage","image Url"+imageUri)
     var uri by rememberSaveable { mutableStateOf<Uri?>(imageUri?.toUri()) }
 
     val painter: Painter = if (uri == null || uri == Uri.EMPTY) {
@@ -131,27 +130,7 @@ val context= LocalContext.current
     } else {
         rememberAsyncImagePainter(model = uri) // Show the image from URI
     }
-    Image(
-        painter= rememberAsyncImagePainter( "content://com.android.providers.media.documents/document/image%3A1000000034"),contentDescription = null
-    )
-//    val painter: Painter =
-//        if (uri == null || uri == Uri.EMPTY) {
-//            painterResource(R.drawable.profile) // Show default profile picture if URI is null or empty
-//        } else {
-//            rememberImagePainter(data = uri) { // Show the image from URI
-//                // Handle loading and error states if needed
-//            }
-//        }
 
-//    val painter: Painter =remember{
-//        if (uri == null || uri == Uri.EMPTY) {
-//            painterResource(R.drawable.profile) // Show default profile picture if URI is null or empty
-//        } else {
-//            rememberImagePainter(data = uri){
-//
-//            }
-//           // rememberAsyncImagePainter(model =uri) // Show the image from URI
-//        }}
 
     val singlePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -161,7 +140,7 @@ val context= LocalContext.current
                 StoarageUtil.uploadToStorage(uri = it, context = context, type = "image")
 
                 // Update Realtime Database with the new image URI
-               // profileViewModel.updateImageUriToDatabase(it.toString()) // Function to update URI in Realtime Database
+                profileViewModel.updateImageUriToDatabase(it.toString()) // Function to update URI in Realtime Database
 
             }
         }

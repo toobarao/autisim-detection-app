@@ -1,5 +1,8 @@
 package com.example.compose.screens
 
+import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,23 +66,95 @@ import com.example.compose.R
 import com.example.compose.components.AppToolbar
 import com.example.compose.components.NavigationDrawerBody
 import com.example.compose.components.NormalTextComponent
+import com.example.compose.data.home.HomeUIState
 import com.example.compose.data.home.HomeViewModel
 import com.example.compose.data.profile.Users
 import com.example.compose.data.profile.profileViewModel
+import com.example.compose.ml.Vgg16WoDa89
 import com.example.compose.navigation.extraItems
 import com.example.compose.navigation.navigationItemsList
 import com.example.compose.ui.theme.colorPrimary
 import com.example.compose.ui.theme.colorSecondary
 import com.example.compose.utility.StoarageUtil
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.ResizeOp
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+
+
+fun uriToBitmap(contentResolver: ContentResolver, uri: Uri?): Bitmap? {
+    if (uri == null) return null
+
+    return try {
+        val inputStream = contentResolver.openInputStream(uri)
+        BitmapFactory.decodeStream(inputStream)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+private suspend fun performInference(model: Vgg16WoDa89, bitmap: Bitmap?): String {
+    return bitmap?.let {
+        withContext(Dispatchers.Default) {
+            val imageProcessor = ImageProcessor.Builder()
+                .add(NormalizeOp(0.0f, 255.0f))
+                .add(ResizeOp(255, 255, ResizeOp.ResizeMethod.BILINEAR))
+                .build()
+
+            var tensorImage = TensorImage(DataType.FLOAT32)
+            tensorImage.load(it)
+            tensorImage = imageProcessor.process(tensorImage)
+
+            val inputFeature0 =
+                TensorBuffer.createFixedSize(intArrayOf(1, 255, 255, 3), DataType.FLOAT32)
+            inputFeature0.loadBuffer(tensorImage.buffer)
+            val outputs = model.process(inputFeature0)
+            val outputFeature0 = outputs.outputFeature0AsTensorBuffer.floatArray
+            model.close()
+            Log.d("my tag", "array size" + outputFeature0.size)
+            var result = outputFeature0[0] * 100
+            if (result < 50)
+                return@withContext "The model suggests $result% a lower probability of autism. For accurate results, consider consulting with a healthcare professional."
+            else
+                return@withContext "The model indicates $result% probability of autism. It's important to consult with a healthcare professional for a comprehensive evaluation."
+        }
+    } ?: throw IllegalArgumentException("Input bitmap is null.")
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = viewModel()) {
     // val TAG = profileViewModel::class.simpleName
+    val context= LocalContext.current
+    val model = Vgg16WoDa89.newInstance(context)
+    var isLoading by remember { mutableStateOf(false) }
+    var outputText by remember { mutableStateOf("") }
+    val contentResolver = context.contentResolver
+    var bitmap: Bitmap? = null
+
+
     val item1= navigationItemsList
     val item2=extraItems
+
+    var uri by remember{
+        mutableStateOf<Uri?>(null)
+    }
+
+    val singlePhotoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = {
+            uri = it
+        }
+    )
     var selectedItem  by rememberSaveable { mutableStateOf(0) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -183,22 +259,9 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                 )
             }) { paddingValues ->
 
-
-            val context = LocalContext.current
-            var uri by remember{
-                mutableStateOf<Uri?>(null)
-            }
-
-            val singlePhotoPicker = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickVisualMedia(),
-                onResult = {
-                    uri = it
-                }
-            )
-
-
             Column(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
                     .padding(5.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -209,7 +272,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                 NormalTextComponent(value = "Upload your child image and with in just 2-3 minutes test we should be able to help you if your child might be autistic")
 
                         Button(modifier = Modifier
-
                             .fillMaxWidth()
                             .heightIn(48.dp),
                             colors = ButtonDefaults.buttonColors(Color.Transparent),
@@ -221,8 +283,7 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                             }) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(20.dp)
+                                    .fillMaxWidth()
                                     .heightIn(48.dp)
                                     .background(
                                         brush = Brush.horizontalGradient(
@@ -235,19 +296,30 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Pick Sing Image",style = TextStyle(fontSize = 18.sp))
+                                Text("Pick Single Image",style = TextStyle(fontSize = 18.sp))
                             }
 
                       //  }
                     }
+                if (isLoading) {
+                    CircularProgressIndicator() // Your loader component, you can customize it according to your needs
+                } else {
+
                     AsyncImage(model = uri, contentDescription = null, modifier = Modifier.size(248.dp))
 
                 Button(modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .heightIn(48.dp),
                     colors = ButtonDefaults.buttonColors(Color.Transparent), onClick = {
                             uri?.let{
-                                StoarageUtil.uploadToStorage(uri=it, context=context, type="image")
+                                bitmap=uriToBitmap(contentResolver, uri)
+                                isLoading = true
+                                GlobalScope.launch {
+                                    outputText=performInference(model, bitmap)
+                                    isLoading = false
+                                }
+                                
+                                //StoarageUtil.uploadToStorage(uri=it, context=context, type="image")
                             }
 
 
@@ -256,7 +328,6 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
 
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp)
                             .heightIn(48.dp)
                             .background(
                                 brush = Brush.horizontalGradient(
@@ -272,7 +343,22 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = view
                     ) {
                         Text( "Upload",style = TextStyle(fontSize = 18.sp))
                     }
+
                 }
+                }
+                LaunchedEffect(outputText) {
+
+
+                    // This block runs when outputText changes
+                    // Update UI or process the result here
+                    // For example, if you want to log the result, you can use Log.d
+                     Log.d("my tag", "Updated outputText: $outputText")
+
+                }
+                NormalTextComponent(value = outputText)
+
+
+
 
             }
 

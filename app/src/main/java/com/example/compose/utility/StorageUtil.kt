@@ -34,20 +34,20 @@ class StoarageUtil {
 
                 var uploadTask = spaceRef.putBytes(byteArray)
                 uploadTask.addOnFailureListener {
-                    Toast.makeText(
-                        context,
-                        "upload failed",
-                        Toast.LENGTH_SHORT
-                    ).show()
+//                    Toast.makeText(
+//                        context,
+//                        "upload failed",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
                     // Handle unsuccessful uploads
                 }.addOnSuccessListener { taskSnapshot ->
                     // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
                     // ...
-                    Toast.makeText(
-                        context,
-                        "upload successed",
-                        Toast.LENGTH_SHORT
-                    ).show()
+//                    Toast.makeText(
+//                        context,
+//                        "upload successed",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
                 }
             }
 

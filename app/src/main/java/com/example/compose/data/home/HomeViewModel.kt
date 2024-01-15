@@ -1,9 +1,11 @@
 package com.example.compose.data.home
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import com.example.compose.data.login.loginUIState
 import com.example.compose.data.profile.Users
 //import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
@@ -21,6 +23,7 @@ class HomeViewModel: ViewModel() {
 
 
     val isUserLoggedIn: MutableLiveData<Boolean> = MutableLiveData()
+    var homeUIState= mutableStateOf(HomeUIState())
 
     fun logout(navController: NavController){
         val firebaseAuth= FirebaseAuth.getInstance()

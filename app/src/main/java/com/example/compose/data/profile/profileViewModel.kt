@@ -47,8 +47,8 @@ class profileViewModel(application: Application): AndroidViewModel(application) 
             val userDataUpdates = HashMap<String, Any>()
             userDataUpdates["name"] = name
             userDataUpdates["email"] = email
-            userDataUpdates["imageUri"] = imageUrl
-
+            //userDataUpdates["imageUri"] = imageUrl
+            writeToSharedPreferencesText(name,email)
             userIdReference.updateChildren(userDataUpdates)
                 .addOnSuccessListener {
                     // Update successful
