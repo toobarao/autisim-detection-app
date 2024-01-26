@@ -1,20 +1,24 @@
 package com.example.compose.data.login
+import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
+import androidx.navigation.NavController
+import com.example.compose.data.profile.readingUserData
 import com.example.compose.data.rules.Validator
 import com.example.compose.navigation.Screen
-import com.google.firebase.auth.FirebaseAuth
-import androidx.navigation.NavController
+import com.example.compose.utility.DataRepository
 import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 
 
-class loginViewModel:ViewModel() {
+class loginViewModel(application: Application): AndroidViewModel(application){
 
     var loginUIState= mutableStateOf(loginUIState())
     val loginInProgress= mutableStateOf(false)
+    private val dataRepository: DataRepository = DataRepository(application)
 
     private val TAG= loginViewModel::class.simpleName
     fun onEvent(event: loginUIEvent){
@@ -71,20 +75,23 @@ class loginViewModel:ViewModel() {
                         .addOnCompleteListener { tokenTask ->
                             if (tokenTask.isSuccessful) {
                                 val token = tokenTask.result?.token
-                                val expirationTimeMillis = tokenTask.result?.expirationTimestamp ?: 0
-                                Log.d(TAG,token.toString())
+                                val expirationTimeMillis = (tokenTask.result?.expirationTimestamp ?: 0)*1000
+                                Log.d("mytag","expirytime"+expirationTimeMillis.toString())
+                                Log.d("mytag","systemtime"+System.currentTimeMillis() .toString())
 
-                                // Now you have the authentication token (JWT)
-                                // You can use this token for further authentication or API requests
-                                // (Remember to handle token expiration and refresh as needed)
+                               readingUserData(dataRepository)
+                                token?.let{
+                                dataRepository.saveTokenWithExpiry(token,expirationTimeMillis)
+                                Log.d(TAG,token.toString())}
+
                             } else {
                                 Log.d(TAG,"Token fail")
-                                // Handle token retrieval failure
+
                             }
                         }
                 }
             } else {
-                // Handle authentication failure
+
             }
                 loginInProgress.value=false
                 Log.d(TAG,"Login done")

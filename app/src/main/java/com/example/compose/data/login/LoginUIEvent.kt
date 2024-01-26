@@ -1,7 +1,6 @@
 package com.example.compose.data.login
 
 import androidx.navigation.NavController
-import com.example.compose.data.signup.SignupUIEvent
 
 sealed class loginUIEvent {
 

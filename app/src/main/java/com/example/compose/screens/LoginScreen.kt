@@ -49,7 +49,7 @@ fun LoginScreen(navController: NavController, loginViewModel: loginViewModel = v
 
     Surface(modifier= Modifier
         .fillMaxSize()
-        .background(Color.White)
+        //.background(Color.White)
         .padding(28.dp)) {
 
         Column(modifier = Modifier.fillMaxSize())

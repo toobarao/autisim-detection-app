@@ -1,29 +1,28 @@
 package com.example.compose.data.signup
 
+
+import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.navigation.NavController
-import com.example.compose.data.profile.Users
-import com.example.compose.data.profile.profileViewModel
+import com.example.compose.data.profile.AddingUser
+import com.example.compose.data.profile.readingUserData
 import com.example.compose.data.rules.Validator
-//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
-import com.google.firebase.Firebase
+import com.example.compose.utility.DataRepository
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.database.database
 
-class SignupViewModel:ViewModel() {
+class SignupViewModel(application: Application): AndroidViewModel(application){
 
     var registrationUIState= mutableStateOf(SignupUIState())
-    var allValidationPassed= mutableStateOf(false)
+
     val signUpInProgress= mutableStateOf(false)
+    private val dataRepository: DataRepository = DataRepository(application)
 
     private val TAG= SignupViewModel::class.simpleName
     fun onEvent(event: SignupUIEvent){
@@ -44,12 +43,7 @@ class SignupViewModel:ViewModel() {
             registrationUIState.value=registrationUIState.value.copy(password = event.password)
 
         }
-        is SignupUIEvent.PrivacyPolicyCheckBoxClicked -> {
-            registrationUIState.value = registrationUIState.value.copy(
-                privacyPolicyAccepted = event.status
-            )
-            Log.d(TAG,registrationUIState.value.privacyPolicyAccepted.toString())
-        }
+
         is SignupUIEvent.RegisterButtonClicked->{
 
             if(validateDataWithRules())
@@ -68,9 +62,6 @@ class SignupViewModel:ViewModel() {
         val lNameResult=Validator.validateLastName(lName = registrationUIState.value.lastName)
         val emailResult=Validator.validateEmail(email = registrationUIState.value.email)
         val passwordResult=Validator.validatePassword(password = registrationUIState.value.password)
-        val privacyPolicyResult = Validator.validatePrivacyPolicyAcceptance(
-            statusValue = registrationUIState.value.privacyPolicyAccepted
-        )
 
 
         val hasError = listOf(
@@ -78,7 +69,7 @@ class SignupViewModel:ViewModel() {
             lNameResult,
             emailResult,
             passwordResult,
-            privacyPolicyResult
+
         ).any { !it.successful }
 
         return if(hasError) {
@@ -87,7 +78,7 @@ class SignupViewModel:ViewModel() {
                 lastNameError =lNameResult.errorMessage,
                 emailError = emailResult.errorMessage,
                 passwordError = passwordResult.errorMessage,
-                privacyPolicyError =privacyPolicyResult.errorMessage
+
             )
             false
 
@@ -96,21 +87,7 @@ class SignupViewModel:ViewModel() {
         }
 
     }
-    fun AddingUser(name: String, email: String) {
-        Log.d(TAG, "Initial Profile data")
-        Log.d(TAG, "Name" + name + "Email" + email)
-        val user = FirebaseAuth.getInstance().currentUser
-        user?.run {
-            val userIdReference = Firebase.database.reference
-                .child("users").child(user.uid)
-            val userData = Users(
-                name = name,
-                email = email,
-                imageUri = null
-            )
-            userIdReference.setValue(userData)
-        }
-    }
+
 
     private fun createUserInFireBase(navController: NavController,Username:String,email:String,password:String){
         signUpInProgress.value = true
@@ -119,11 +96,38 @@ class SignupViewModel:ViewModel() {
             auth.createUserWithEmailAndPassword(email,password).addOnCompleteListener {
                 Log.d(TAG,"isSuccessful=${it.isSuccessful}")
                 if(it.isSuccessful){
+
+                    val user = FirebaseAuth.getInstance().currentUser
+                    if (user != null) {
+                        // Access the user's authentication token
+                        user.getIdToken(true)
+                            .addOnCompleteListener { tokenTask ->
+                                if (tokenTask.isSuccessful) {
+                                    val token = tokenTask.result?.token
+                                    val expirationTimeMillis = (tokenTask.result?.expirationTimestamp ?: 0)*1000
+                                    Log.d("mytag","expirytime"+expirationTimeMillis.toString())
+                                    Log.d("mytag","systemtime"+System.currentTimeMillis() .toString())
+
+                                    token?.let{
+                                        dataRepository.saveTokenWithExpiry(token,expirationTimeMillis)
+                                        Log.d(TAG,token.toString())}
+
+
+                                } else {
+                                    Log.d(TAG,"Token fail")
+
+                                }
+                            }
+                    }
+                } else {
+
+                }
                     signUpInProgress.value = false
                     AddingUser(Username,email)
+                readingUserData(dataRepository)
                     navController.navigate(Screen.HomeScreen.route)
-                    //PostOfficeAppRouter.navigateTo(Screen.HomeScreen)
-                }
+
+
             }.addOnFailureListener {exception->
                     signUpInProgress.value = false
                     val errorMessage = when (exception) {

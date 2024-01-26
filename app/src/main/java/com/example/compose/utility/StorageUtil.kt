@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import com.google.firebase.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.storage
 import java.util.UUID
@@ -11,7 +12,7 @@ import java.util.UUID
 class StoarageUtil {
     companion object {
 
-        fun uploadToStorage(uri: Uri, context: Context, type: String) {
+        fun uploadToStorage(uri: Uri, context: Context, type: String, onUploadComplete: (String) -> Unit) {
             val storage = Firebase.storage
 
             // Create a storage reference from our app
@@ -34,25 +35,33 @@ class StoarageUtil {
 
                 var uploadTask = spaceRef.putBytes(byteArray)
                 uploadTask.addOnFailureListener {
-//                    Toast.makeText(
-//                        context,
-//                        "upload failed",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-                    // Handle unsuccessful uploads
+
                 }.addOnSuccessListener { taskSnapshot ->
-                    // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
-                    // ...
-//                    Toast.makeText(
-//                        context,
-//                        "upload successed",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
+                    spaceRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                        // Callback to the caller with the download URL
+                        onUploadComplete(downloadUrl.toString())
+                    }
                 }
             }
 
 
 
+        }
+
+        fun loadFirebaseImage(imageUrl: String?) {
+            if (imageUrl != null) {
+                val storageReference = FirebaseStorage.getInstance().getReference("images").child(imageUrl)
+
+                storageReference.downloadUrl.addOnSuccessListener { uri ->
+                    // Use the URI to load the image into your UI
+                    // For example, if you are using an ImageView:
+                    // imageView.load(uri)
+                }.addOnFailureListener { exception ->
+                    // Handle failure
+                }
+            } else {
+                // Handle case where imageUrl is null or empty
+            }
         }
 
     }

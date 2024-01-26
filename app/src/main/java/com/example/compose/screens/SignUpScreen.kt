@@ -1,32 +1,27 @@
 package com.example.compose.screens
 
-import android.widget.Toast
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
-
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.compose.R
 import com.example.compose.components.ButtonComponent
-import com.example.compose.components.CheckBoxComponent
 import com.example.compose.components.ClickableLoginTextComponent
 import com.example.compose.components.DividerTextComponent
 import com.example.compose.components.HeadingTextComponent
@@ -36,8 +31,6 @@ import com.example.compose.components.PasswordTextFieldComponent
 import com.example.compose.components.errorMessage
 import com.example.compose.data.signup.SignupUIEvent
 import com.example.compose.data.signup.SignupViewModel
-
-//import com.example.compose.navigation.PostOfficeAppRouter
 import com.example.compose.navigation.Screen
 import com.example.compose.ui.theme.colorError
 
@@ -50,7 +43,7 @@ fun SignUpScreen(navController: NavController, signupViewModel: SignupViewModel 
 
 Surface(modifier= Modifier
     .fillMaxSize()
-    .background(Color.White)
+    //.background(Color.White)
     .padding(28.dp))
 {
     Column(modifier=Modifier.fillMaxSize()){
@@ -82,20 +75,7 @@ Surface(modifier= Modifier
             errorMessage(errorMessage = signupViewModel.registrationUIState.value.passwordError.toString())
         }
 
-        CheckBoxComponent(stringResource(id = R.string.terms_and_condition),  onCheckedChange = {
-            signupViewModel.onEvent(SignupUIEvent.PrivacyPolicyCheckBoxClicked(it))
-        },
-            onTextSelected = {
-                navController.navigate(Screen.TermsAndConditionsScreen.route)
-//                PostOfficeAppRouter.navigateTo(
-//                    Screen.TermsAndConditionsScreen
-//                )
-            })
 
-
-        if (signupViewModel.registrationUIState.value.privacyPolicyError != null) {
-            errorMessage(errorMessage = signupViewModel.registrationUIState.value.privacyPolicyError.toString())
-        }
 
         Spacer(modifier = Modifier.heightIn(40.dp))
         if (signupViewModel.registrationUIState.value.signupErrorMessage != null) {
@@ -116,7 +96,7 @@ Surface(modifier= Modifier
 
         ClickableLoginTextComponent(tryingToLogin = true, onTextSelected = {
             navController.navigate(Screen.LoginScreen.route)
-//            PostOfficeAppRouter.navigateTo(Screen.LoginScreen)
+
         })
 
 

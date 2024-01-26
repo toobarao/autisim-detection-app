@@ -5,13 +5,13 @@ data class SignupUIState (
     var lastName:String="",
     var email:String="",
     var password:String="",
-    var privacyPolicyAccepted :Boolean = false,
+
 
 
     var firstNameError: String?=null,
     var lastNameError:String?=null,
     var emailError:String?=null,
     var passwordError:String?=null,
-    var privacyPolicyError:String?=null,
+
     var signupErrorMessage:String?=null,
 )

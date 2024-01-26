@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,7 +31,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -48,7 +46,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
@@ -69,16 +66,13 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.R
-import com.example.compose.data.home.NavigationItem
-//import com.example.compose.navigation.PostOfficeAppRouter
+import com.example.compose.navigation.NavigationItem
 import com.example.compose.ui.theme.ComponentShapes
-import com.example.compose.ui.theme.colorAccent
 import com.example.compose.ui.theme.colorError
 import com.example.compose.ui.theme.colorGray
 import com.example.compose.ui.theme.colorPrimary
 import com.example.compose.ui.theme.colorSecondary
 import com.example.compose.ui.theme.colorText
-import com.example.compose.ui.theme.colorWhite
 
 
 @Composable
@@ -89,7 +83,7 @@ fun NormalTextComponent(value:String){
         text=value,
         style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Normal,
             fontStyle = FontStyle.Normal),
-        color= colorResource(id = R.color.colorText),
+       // color= colorResource(id = R.color.colorText),
         textAlign = TextAlign.Center
     )
 }
@@ -103,7 +97,7 @@ fun HeadingTextComponent(value:String){
             .heightIn(),
         style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold,
             fontStyle = FontStyle.Normal),
-        color= colorResource(id = R.color.colorText),
+        //color= colorResource(id = R.color.colorText),
         textAlign = TextAlign.Center
     )
 }
@@ -432,7 +426,7 @@ fun NavigationDrawerHeader(value: String?) {
     ) {
 
         NavigationDrawerText(
-            title = value?:stringResource(R.string.navigation_header), 32.sp ,color=Color.Black
+            title = value?:stringResource(R.string.navigation_header), 32.sp
         )
 
     }
@@ -471,26 +465,22 @@ fun NavigationItemRow(item: NavigationItem,
 
         Spacer(modifier = Modifier.width(18.dp))
 
-        NavigationDrawerText(title = item.title, 18.sp, colorPrimary)
+        NavigationDrawerText(title = item.title, 18.sp)
 
 
     }
 }
 
 @Composable
-fun NavigationDrawerText(title: String, textUnit: TextUnit, color: Color) {
+fun NavigationDrawerText(title: String, textUnit: TextUnit) {
 
-    val shadowOffset = Offset(4f, 6f)
 
     Text(
         text = title, style = TextStyle(
-            color = Color.Black,
+
             fontSize = textUnit,
             fontStyle = FontStyle.Normal,
-//            shadow = Shadow(
-//                color = Color.Black,
-//                offset = shadowOffset, 2f
-//            )
+
         )
     )
 }
